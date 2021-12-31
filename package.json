@@ -4,26 +4,29 @@
     "email": "mayankmittal@intugine.com"
   },
   "dependencies": {
-    "mongodb": "^3.6.2"
+    "mongodb": "^3.6.5"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/mayank-mittal/mongodb.git"
   },
-  "description": "Mongodb Native - Promisified, Simplified",
+  "description": "Tiny wrapper over MongoDB Native Driver  - Promisified, Simplified",
   "license": "MIT",
   "main": "index.js",
   "name": "@intugine-technologies/mongodb",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha test/index.js"
+    "test": "./node_modules/mocha/bin/mocha test/index.js --jobs 1 --timeout 10000",
+    "deploy": "npm run test && npm publish --access public"
   },
   "keywords": [
     "mongo",
     "mongodb",
     "intugine",
-    "promise"
+    "promise",
+    "promisified",
+    "wrapper"
   ],
-  "version": "1.12.7",
+  "version": "1.13.3",
   "engines": {
     "node": ">=8.0.0"
   },

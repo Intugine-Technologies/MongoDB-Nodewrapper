@@ -7,7 +7,7 @@ A mongo envelope specifically designed in house for Intugine Technologies.
 First install Node.js and Mongodb. Then:
   
 ```
-npm i --save @intugine-technologies/mongodb
+npm i --S @intugine-technologies/mongodb
 ```
   
 ## Importing

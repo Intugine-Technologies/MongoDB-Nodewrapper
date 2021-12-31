@@ -2,14 +2,15 @@ const mongo = require('../index.js');
 const assert = require('assert');
 const config = {
     DB_URI: process.env.DB__URI,
-    DB_NAME: "furlenco"
+    DB_NAME: "mongo_test"
 };
+console.log(process.env.DB__URI);
 describe("Mongo DB", () => {
     describe("Connection", () => {
         let db = null;
         let error = null;
         it("Should connect successfully", (done) => {
-            mongo(config.DB_URI, 'furlenco')
+            mongo(config.DB_URI, config.DB_NAME)
                 .then(async (DB) => {
                     db = DB;
                     if (db.is_connected()) {
@@ -24,7 +25,7 @@ describe("Mongo DB", () => {
                 });
         });
         it("Should fail connecting", (done) => {
-            mongo(config.DB_URI.replace("intugine", "xyz"), 'furlenco')
+            mongo(config.DB_URI.replace("intugine", "xyz"), config.DB_NAME)
                 .then((DB) => {
                     done({ message: "Not sure how it got here" });
                 })
@@ -36,7 +37,7 @@ describe("Mongo DB", () => {
     describe("Functions", () => {
         let db = null;
         before((done) => {
-            mongo(config.DB_URI, 'furlenco')
+            mongo(config.DB_URI, config.DB_NAME)
                 .then((DB) => {
                     db = DB;
                     done();
@@ -45,12 +46,68 @@ describe("Mongo DB", () => {
                     done(error);
                 });
         });
+        after(() => {
+            if(!db) return Promise.resolve();
+            return db.drop_collection("trips")
+                then(() => {
+                    return db.close();
+                });
+        });
         describe("is_connected", () => {
             it("Should return true", (done) => {
                 if (db && db.is_connected()) done();
                 else done(db);
             });
         });
+
+        describe("create", () => {
+            it("should insert array of objects", (done) => {
+                db.create("trips", [{
+                    x: 1
+                }, {
+                    x: 2
+                }])
+                .then((r) => {
+                    if(r.insertedCount === 2) done();
+                    else done(r);
+                })
+                .catch((e) => {
+                    done(e);
+                })
+            });
+            it("should insert single object", (done) => {
+                db.create("trips", {
+                    x: 1
+                })
+                .then((r) => {
+                    if(r.insertedCount === 1) done();
+                    else done(r);
+                })
+                .catch((e) => {
+                    done(e);
+                })
+            });
+            it("should override createdAt", (done) => {
+                db.create("trips", [{
+                    x: 1,
+                    createdAt: new Date("2020")
+                }])
+                .then((r) => {
+                    if(r.insertedCount !== 1) return Promise.reject(r);
+                    else return db.read("trips", {
+                        _id: db.objectid(r.insertedIds[0])
+                    })
+                })
+                .then((r) => {
+                    if(r.length && r[0].createdAt && r[0].createdAt.toISOString() === (new Date("2020").toISOString())) done();
+                    else done(r);
+                })
+                .catch((e) => {
+                    done(e);
+                })
+            });
+        });
+
         describe("read", () => {
             it("Should return 1 element without query", (done) => {
                 db.read("trips")
@@ -62,11 +119,12 @@ describe("Mongo DB", () => {
                         done(e);
                     })
             });
-            it("Should return 1 element with query", (done) => {
-                db.read("trips", { device: "A467" })
+            it("Should return more than 1 element with query", (done) => {
+                db.read("trips", { x: 1 }, 10)
                     .then((r) => {
-                        if (Array.isArray(r) && r.length === 1) done();
-                        else done(r);
+                        
+                        if (Array.isArray(r) && r.length > 1) done();
+                        else {console.log(r);done(r);}
                     })
                     .catch((e) => {
                         done(e);
@@ -129,17 +187,17 @@ describe("Mongo DB", () => {
                     })
             });
         });
-        describe("close", () => {
-            it("Connection should be closed", (done) => {
-                db.close()
-                    .then((r) => {
-                        if (db.is_connected()) done();
-                        else done(r);
-                    })
-                    .catch((e) => {
-                        done(e);
-                    });
-            });
-        });
+        // describe("close", () => {
+        //     it("Connection should be closed", (done) => {
+        //         db.close()
+        //             .then((r) => {
+        //                 if (db.is_connected()) done();
+        //                 else done(r);
+        //             })
+        //             .catch((e) => {
+        //                 done(e);
+        //             });
+        //     });
+        // });
     });
 });
