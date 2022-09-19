@@ -4,9 +4,6 @@ const config = {
     DB_URI: process.env.DB__URI,
     DB_NAME: "mongo_test",
 };
-process.env.INTUGINE_DB_URI = "mongodb+srv://epod.zhjde.mongodb.net/?retryWrites=true&w=majority"
-process.env.INTUGINE_DB_USER = "epod_backend_api"
-process.env.INTUGINE_DB_PASS = "clMIDOjiO4CBgCnN"
 console.log(process.env.INTUGINE_DB_URI);
 describe("Mongo DB", () => {
     describe("Connection", () => {
