@@ -87,10 +87,9 @@ const make_usable_object = (client, dbname) => {
 };
 module.exports = (dbUrl, dbname, options = {}) =>
     new Promise((resolve, reject) => {
-        options.maxPoolSize = options.poolSize;
+        options.maxPoolSize = options.poolSize || 20;
         delete options.poolSize
         Mongo.MongoClient.connect(dbUrl, {
-            maxPoolSize: 20,
             useUnifiedTopology: true,
             ...options,
         })
