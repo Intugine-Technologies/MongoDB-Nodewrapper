@@ -4,6 +4,9 @@ const config = {
     DB_URI: process.env.DB__URI,
     DB_NAME: "mongo_test",
 };
+process.env.INTUGINE_DB_URI = "mongodb+srv://epod.zhjde.mongodb.net/?retryWrites=true&w=majority"
+process.env.INTUGINE_DB_USER = "epod_backend_api"
+process.env.INTUGINE_DB_PASS = "clMIDOjiO4CBgCnN"
 console.log(process.env.INTUGINE_DB_URI);
 describe("Mongo DB", () => {
     describe("Connection", () => {
@@ -95,13 +98,15 @@ describe("Mongo DB", () => {
                     },
                 ])
                     .then((r) => {
+                        console.log(r);
                         if (r.insertedCount !== 1) return Promise.reject(r);
                         else
                             return db.read("trips", {
-                                _id: db.objectid(r.insertedIds[0]),
+                                _id: db.objectid(r.insertedIds['0']),
                             });
                     })
                     .then((r) => {
+                        console.log(r);
                         if (
                             r.length &&
                             r[0].createdAt &&
@@ -112,6 +117,7 @@ describe("Mongo DB", () => {
                         else done(r);
                     })
                     .catch((e) => {
+                        console.error(e)
                         done(e);
                     });
             });
