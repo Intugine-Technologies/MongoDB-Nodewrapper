@@ -2,7 +2,7 @@ const Mongo = require("mongodb");
 
 const make_usable_object = (client, dbname) => {
     return {
-        is_connected: () => client.isConnected(),
+        is_connected: () => true,
         objectid: (id) =>
             Mongo.ObjectID.isValid(id) ? Mongo.ObjectID(id) : null,
         is_valid_objectid: (id) => Mongo.ObjectID.isValid(id),
@@ -65,8 +65,7 @@ const make_usable_object = (client, dbname) => {
             client
                 .db(dbname)
                 .collection(collection)
-                .find(query)
-                .count({ ...options }),
+                .countDocuments(query),
         aggregate: (collection, pipeline = [], options = {}) =>
             client
                 .db(dbname)
@@ -88,8 +87,9 @@ const make_usable_object = (client, dbname) => {
 };
 module.exports = (dbUrl, dbname, options = {}) =>
     new Promise((resolve, reject) => {
+        options.maxPoolSize = options.poolSize || 20;
+        delete options.poolSize
         Mongo.MongoClient.connect(dbUrl, {
-            poolSize: 20,
             useUnifiedTopology: true,
             ...options,
         })
