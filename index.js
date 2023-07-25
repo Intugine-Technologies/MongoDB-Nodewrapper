@@ -4,8 +4,8 @@ const make_usable_object = (client, dbname) => {
     return {
         is_connected: () => true,
         objectid: (id) =>
-            Mongo.ObjectID.isValid(id) ? Mongo.ObjectID(id) : null,
-        is_valid_objectid: (id) => Mongo.ObjectID.isValid(id),
+            Mongo.ObjectId.isValid(id) ? new Mongo.ObjectId(id) : null,
+        is_valid_objectid: (id) => Mongo.ObjectId.isValid(id),
         create: (collection, data, options = {}) =>
             client
                 .db(dbname)
