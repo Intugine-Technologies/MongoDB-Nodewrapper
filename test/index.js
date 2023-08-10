@@ -10,12 +10,7 @@ describe("Mongo DB", () => {
         let db = null;
         let error = null;
         it("Should connect successfully", (done) => {
-            mongo(process.env.INTUGINE_DB_URI, "mongo_test", {
-                auth: {
-                    username: process.env.INTUGINE_DB_USER,
-                    password: process.env.INTUGINE_DB_PASS,
-                },
-            })
+            mongo(process.env.INTUGINE_DB_URI, "mongo_test")
                 .then(async (DB) => {
                     db = DB;
                     if (db.is_connected()) {
@@ -33,12 +28,7 @@ describe("Mongo DB", () => {
     describe("Functions", () => {
         let db = null;
         before((done) => {
-            mongo(process.env.INTUGINE_DB_URI, "mongo_test", {
-                auth: {
-                    username: process.env.INTUGINE_DB_USER,
-                    password: process.env.INTUGINE_DB_PASS,
-                },
-            })
+            mongo(process.env.INTUGINE_DB_URI, "mongo_test")
                 .then((DB) => {
                     db = DB;
                     done();
