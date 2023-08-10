@@ -14,7 +14,11 @@ jobs:
               with:
                   node-version: 16
             - run: npm ci
-            - run: npm test
+            - name: Test
+              run: npm test
+              env:
+                CI: true
+                INTUGINE_DB_URI: ${{secrets.INTUGINE_DB_URI}}
 
     publish-npm:
         needs: build
