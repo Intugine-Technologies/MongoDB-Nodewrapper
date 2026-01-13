@@ -1,11 +1,10 @@
-const Mongo = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 const make_usable_object = (client, dbname) => {
     return {
         is_connected: () => true,
-        objectid: (id) =>
-            Mongo.ObjectId.isValid(id) ? new Mongo.ObjectId(id) : null,
-        is_valid_objectid: (id) => Mongo.ObjectId.isValid(id),
+        objectid: (id) => (ObjectId.isValid(id) ? new ObjectId(id) : null),
+        is_valid_objectid: (id) => ObjectId.isValid(id),
         create: (collection, data, options = {}) =>
             client
                 .db(dbname)
@@ -24,7 +23,7 @@ const make_usable_object = (client, dbname) => {
                           ],
                     {
                         ...options,
-                    }
+                    },
                 ),
         read: (
             collection,
@@ -32,7 +31,7 @@ const make_usable_object = (client, dbname) => {
             limit = 1,
             offset = 0,
             projection = {},
-            sorting = { _id: -1 }
+            sorting = { _id: -1 },
         ) =>
             client
                 .db(dbname)
@@ -41,7 +40,9 @@ const make_usable_object = (client, dbname) => {
                 .project(projection)
                 .sort(sorting)
                 .skip(offset)
-                .limit(limit === "all" ? 0 : parseInt(limit, 10) || 1)
+                .limit(
+                    limit === "all" ? 0 : Math.max(parseInt(limit, 10) || 1, 1),
+                )
                 .toArray(),
         update: (collection, query = {}, change = {}, options = {}) =>
             client
@@ -54,7 +55,7 @@ const make_usable_object = (client, dbname) => {
                         : {
                               $set: { ...change, updatedAt: new Date() },
                           },
-                    { ...options }
+                    { ...options },
                 ),
         delete: (collection, query = {}, options = {}) =>
             client
@@ -65,7 +66,7 @@ const make_usable_object = (client, dbname) => {
             client
                 .db(dbname)
                 .collection(collection)
-                .countDocuments(query),
+                .countDocuments(query, options),
         aggregate: (collection, pipeline = [], options = {}) =>
             client
                 .db(dbname)
@@ -73,10 +74,7 @@ const make_usable_object = (client, dbname) => {
                 .aggregate(pipeline, { allowDiskUse: true, ...options })
                 .toArray(),
         drop_collection: (collection, options = {}) =>
-            client
-                .db(dbname)
-                .collection(collection)
-                .drop({ ...options }),
+            client.db(dbname).collection(collection).drop(),
         distinct: (collection, key, query = {}, options = {}) =>
             client
                 .db(dbname)
@@ -87,10 +85,12 @@ const make_usable_object = (client, dbname) => {
 };
 module.exports = (dbUrl, dbname, options = {}) =>
     new Promise((resolve, reject) => {
-        options.maxPoolSize = options.poolSize || 20;
-        delete options.poolSize
-        Mongo.MongoClient.connect(dbUrl, {
-            useUnifiedTopology: true,
+        options.maxPoolSize = options.poolSize ?? 20;
+        delete options.poolSize;
+        MongoClient.connect(dbUrl, {
+            minPoolSize: 2,
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
             ...options,
         })
             .then((client) =>
@@ -99,7 +99,7 @@ module.exports = (dbUrl, dbname, options = {}) =>
                     dbInstance: client.db(dbname),
                     db: (dbName) => make_usable_object(client, dbName),
                     clientInstance: client,
-                })
+                }),
             )
             .catch((e) => reject(e));
     });
